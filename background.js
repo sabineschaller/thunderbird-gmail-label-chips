@@ -94,6 +94,7 @@ browser.storage.onChanged.addListener((changes, area) => {
 
 const MENU_ROOT = "gm-label-as";
 const MENU_PREFIX = "gm-label:";
+const BUTTON_PREFIX = "gm-label-button:";
 // Labels left out of the menu until the options page says otherwise: Archive,
 // Archives and everything below them.
 const HIDDEN_BY_DEFAULT = /^Archives?(\/|$)/i;
@@ -163,12 +164,27 @@ async function rebuildMenu() {
     enabled: labels.length > 0,
   });
   for (const label of labels) {
+    // A single "&" marks a menu access key.
+    const title = label.replaceAll("&", "&&");
     browser.menus.create({
       id: MENU_PREFIX + label,
       parentId: MENU_ROOT,
-      // A single "&" marks a menu access key.
-      title: label.replaceAll("&", "&&"),
+      title,
       contexts: ["message_list"],
+    });
+    // The Label button in the header of an open message.
+    browser.menus.create({
+      id: BUTTON_PREFIX + label,
+      title,
+      contexts: ["message_display_action_menu"],
+    });
+  }
+  if (!labels.length) {
+    browser.menus.create({
+      id: BUTTON_PREFIX,
+      title: "No labels chosen in the add-on’s options",
+      contexts: ["message_display_action_menu"],
+      enabled: false,
     });
   }
   return true;
@@ -183,10 +199,10 @@ async function selectedMessages(messageList) {
   return messages;
 }
 
-async function addLabel(label, messageList) {
+async function addLabel(label, messages) {
   // folderId -> messageIds
   const copies = new Map();
-  for (const message of await selectedMessages(messageList)) {
+  for (const message of messages) {
     const folderId = gLabelFolders.get(message.folder?.accountId)?.get(label);
     // Skip non-Gmail messages and messages already in that label's folder.
     if (!folderId || folderId == message.folder.id) {
@@ -208,18 +224,29 @@ async function addLabel(label, messageList) {
 }
 
 browser.menus.onShown.addListener(async info => {
-  if (info.contexts.includes("message_list") && (await buildMenu())) {
+  if (
+    info.contexts.some(c => ["message_list", "message_display_action_menu"].includes(c)) &&
+    (await buildMenu())
+  ) {
     browser.menus.refresh();
   }
 });
 
-browser.menus.onClicked.addListener(info => {
-  if (
-    typeof info.menuItemId == "string" &&
-    info.menuItemId.startsWith(MENU_PREFIX) &&
-    info.selectedMessages
-  ) {
-    addLabel(info.menuItemId.slice(MENU_PREFIX.length), info.selectedMessages);
+browser.menus.onClicked.addListener(async (info, tab) => {
+  const id = info.menuItemId;
+  if (typeof id != "string") {
+    return;
+  }
+  if (id.startsWith(MENU_PREFIX) && info.selectedMessages) {
+    addLabel(
+      id.slice(MENU_PREFIX.length),
+      await selectedMessages(info.selectedMessages)
+    );
+  } else if (id.startsWith(BUTTON_PREFIX) && tab) {
+    addLabel(
+      id.slice(BUTTON_PREFIX.length),
+      await browser.messageDisplay.getDisplayedMessages(tab.id)
+    );
   }
 });
 
