@@ -166,15 +166,18 @@ async function rebuildMenu() {
   for (const label of labels) {
     // A single "&" marks a menu access key.
     const title = label.replaceAll("&", "&&");
+    // Checkboxes, ticked in onShown for labels the messages already have.
     browser.menus.create({
       id: MENU_PREFIX + label,
       parentId: MENU_ROOT,
+      type: "checkbox",
       title,
       contexts: ["message_list"],
     });
     // The Label button in the header of an open message.
     browser.menus.create({
       id: BUTTON_PREFIX + label,
+      type: "checkbox",
       title,
       contexts: ["message_display_action_menu"],
     });
@@ -223,18 +226,57 @@ async function addLabel(label, messages) {
   }
 }
 
-browser.menus.onShown.addListener(async info => {
-  if (
-    info.contexts.some(c => ["message_list", "message_display_action_menu"].includes(c)) &&
-    (await buildMenu())
-  ) {
-    browser.menus.refresh();
+/** The menu labels that every one of the messages already has. */
+async function appliedLabels(messages) {
+  if (!messages.length) {
+    return new Set();
   }
+  const lists = await browser.gmailLabelChips.getLabels(messages.map(m => m.id));
+  const labelSets = messages.map((message, i) => {
+    const labels = new Set(lists[i]);
+    // Gmail leaves out the label of the folder a message is in.
+    const folderLabel = message.folder?.path.slice(1);
+    if (gLabelFolders.get(message.folder?.accountId)?.has(folderLabel)) {
+      labels.add(folderLabel);
+    }
+    return labels;
+  });
+  return new Set(
+    gMenuLabels.filter(label => labelSets.every(labels => labels.has(label)))
+  );
+}
+
+browser.menus.onShown.addListener(async (info, tab) => {
+  let prefix;
+  let messages = [];
+  if (info.contexts.includes("message_list")) {
+    prefix = MENU_PREFIX;
+    if (info.selectedMessages) {
+      messages = await selectedMessages(info.selectedMessages);
+    }
+  } else if (info.contexts.includes("message_display_action_menu")) {
+    prefix = BUTTON_PREFIX;
+    if (tab) {
+      messages = await browser.messageDisplay.getDisplayedMessages(tab.id);
+    }
+  } else {
+    return;
+  }
+
+  await buildMenu();
+  const applied = await appliedLabels(messages);
+  await Promise.all(
+    gMenuLabels.map(label =>
+      browser.menus.update(prefix + label, { checked: applied.has(label) })
+    )
+  );
+  browser.menus.refresh();
 });
 
 browser.menus.onClicked.addListener(async (info, tab) => {
   const id = info.menuItemId;
-  if (typeof id != "string") {
+  // Ticked labels are already applied, and removing labels isn't supported.
+  if (typeof id != "string" || info.wasChecked) {
     return;
   }
   if (id.startsWith(MENU_PREFIX) && info.selectedMessages) {

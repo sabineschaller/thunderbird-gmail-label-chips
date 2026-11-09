@@ -43,6 +43,15 @@
         ]
       },
       {
+        "name": "getLabels",
+        "type": "function",
+        "description": "Get the user labels recorded on each message (not counting the label of the folder it's in).",
+        "async": true,
+        "parameters": [
+          { "name": "messageIds", "type": "array", "items": { "type": "integer" } }
+        ]
+      },
+      {
         "name": "listLabelNames",
         "type": "function",
         "description": "List the Gmail label names (IMAP folders) of a server.",

@@ -287,6 +287,17 @@ var gmailLabelChips = class extends ExtensionCommon.ExtensionAPI {
             }));
         },
 
+        async getLabels(messageIds) {
+          return messageIds.map(messageId => {
+            const hdr = context.extension.messageManager.get(messageId);
+            return hdr
+              ? parseLabels(hdr.getStringProperty("X-GM-LABELS")).filter(
+                  label => !label.startsWith("\\")
+                )
+              : [];
+          });
+        },
+
         async addLabel(messageIds, label) {
           const quoted = `"${label.replace(/[\\"]/g, "\\$&")}"`;
           for (const messageId of messageIds) {
