@@ -1,8 +1,13 @@
 {
   "manifest_version": 2,
   "name": "Gmail Label Chips",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "Shows Gmail labels, in their Gmail colors, below the subject on message list cards.",
+  "icons": {
+    "32": "icons/icon.svg",
+    "64": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
   "browser_specific_settings": {
     "gecko": {
       "id": "gmail-label-chips@interledger.org",
@@ -20,7 +25,9 @@
     "https://gmail.googleapis.com/*"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": [
+      "background.js"
+    ]
   },
   "message_display_action": {
     "type": "menu",
@@ -28,8 +35,16 @@
     "default_title": "Add a Gmail label",
     "default_icon": "icons/label-dark.svg",
     "theme_icons": [
-      { "light": "icons/label-light.svg", "dark": "icons/label-dark.svg", "size": 16 },
-      { "light": "icons/label-light.svg", "dark": "icons/label-dark.svg", "size": 32 }
+      {
+        "light": "icons/label-light.svg",
+        "dark": "icons/label-dark.svg",
+        "size": 16
+      },
+      {
+        "light": "icons/label-light.svg",
+        "dark": "icons/label-dark.svg",
+        "size": 32
+      }
     ]
   },
   "options_ui": {
@@ -39,8 +54,14 @@
     "gmailLabelChips": {
       "schema": "api/schema.json",
       "parent": {
-        "scopes": ["addon_parent"],
-        "paths": [["gmailLabelChips"]],
+        "scopes": [
+          "addon_parent"
+        ],
+        "paths": [
+          [
+            "gmailLabelChips"
+          ]
+        ],
         "script": "api/implementation.js"
       }
     }
