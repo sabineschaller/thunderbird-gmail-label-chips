@@ -86,6 +86,118 @@ browser.storage.onChanged.addListener((changes, area) => {
   }
 });
 
+// Right-click menu on the message list for adding a label. In Gmail's IMAP,
+// copying a message to a label's folder adds that label to the message.
+
+const MENU_ROOT = "gm-label-as";
+const MENU_PREFIX = "gm-label:";
+// Labels left out of the menu: Archive, Archives and everything below them.
+const HIDDEN_LABELS = /^Archives?(\/|$)/i;
+
+// accountId -> Map(labelName -> folderId)
+let gLabelFolders = new Map();
+let gMenuLabels = [];
+
+async function loadLabelFolders() {
+  const labelFolders = new Map();
+  for (const { accountId } of await browser.gmailLabelChips.listGmailServers()) {
+    const labels = new Map();
+    for (const folder of await browser.folders.query({ accountId, isRoot: false })) {
+      const label = folder.path.slice(1);
+      if (
+        // Inbox, Sent, Drafts, Trash, Spam, All Mail, ...
+        folder.specialUse?.length ||
+        label == "INBOX" ||
+        label.startsWith("[Gmail]") ||
+        HIDDEN_LABELS.test(label)
+      ) {
+        continue;
+      }
+      labels.set(label, folder.id);
+    }
+    labelFolders.set(accountId, labels);
+  }
+  gLabelFolders = labelFolders;
+  return [...new Set([...labelFolders.values()].flatMap(m => [...m.keys()]))].sort(
+    (a, b) => a.localeCompare(b)
+  );
+}
+
+/** Rebuild the menu if the labels changed. Returns true if it was rebuilt. */
+async function buildMenu() {
+  const labels = await loadLabelFolders();
+  if (labels.join("\n") == gMenuLabels.join("\n")) {
+    return false;
+  }
+  gMenuLabels = labels;
+  await browser.menus.removeAll();
+  browser.menus.create({
+    id: MENU_ROOT,
+    title: "Add Gmail Label",
+    contexts: ["message_list"],
+    enabled: labels.length > 0,
+  });
+  for (const label of labels) {
+    browser.menus.create({
+      id: MENU_PREFIX + label,
+      parentId: MENU_ROOT,
+      // A single "&" marks a menu access key.
+      title: label.replaceAll("&", "&&"),
+      contexts: ["message_list"],
+    });
+  }
+  return true;
+}
+
+async function selectedMessages(messageList) {
+  const messages = [...messageList.messages];
+  while (messageList.id) {
+    messageList = await browser.messages.continueList(messageList.id);
+    messages.push(...messageList.messages);
+  }
+  return messages;
+}
+
+async function addLabel(label, messageList) {
+  // folderId -> messageIds
+  const copies = new Map();
+  for (const message of await selectedMessages(messageList)) {
+    const folderId = gLabelFolders.get(message.folder?.accountId)?.get(label);
+    // Skip non-Gmail messages and messages already in that label's folder.
+    if (!folderId || folderId == message.folder.id) {
+      continue;
+    }
+    if (!copies.has(folderId)) {
+      copies.set(folderId, []);
+    }
+    copies.get(folderId).push(message.id);
+  }
+  for (const [folderId, messageIds] of copies) {
+    try {
+      await browser.messages.copy(messageIds, folderId);
+      await browser.gmailLabelChips.addLabel(messageIds, label);
+    } catch (e) {
+      console.error(`Gmail Label Chips: adding label "${label}" failed`, e);
+    }
+  }
+}
+
+browser.menus.onShown.addListener(async info => {
+  if (info.contexts.includes("message_list") && (await buildMenu())) {
+    browser.menus.refresh();
+  }
+});
+
+browser.menus.onClicked.addListener(info => {
+  if (
+    typeof info.menuItemId == "string" &&
+    info.menuItemId.startsWith(MENU_PREFIX) &&
+    info.selectedMessages
+  ) {
+    addLabel(info.menuItemId.slice(MENU_PREFIX.length), info.selectedMessages);
+  }
+});
+
 browser.runtime.onMessage.addListener(message => {
   if (message?.type == "sync") {
     return syncColors();
@@ -105,6 +217,7 @@ browser.runtime.onMessage.addListener(message => {
 
 (async () => {
   await pushColors();
+  buildMenu();
   for (const tab of await browser.tabs.query({ type: "mail" })) {
     injectTab(tab);
   }

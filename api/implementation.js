@@ -280,7 +280,29 @@ var gmailLabelChips = class extends ExtensionCommon.ExtensionAPI {
                 s.type == "imap" &&
                 s.QueryInterface(Ci.nsIImapIncomingServer).isGMailServer
             )
-            .map(s => ({ key: s.key, username: s.username }));
+            .map(s => ({
+              key: s.key,
+              accountId: MailServices.accounts.findAccountForServer(s)?.key,
+              username: s.username,
+            }));
+        },
+
+        async addLabel(messageIds, label) {
+          const quoted = `"${label.replace(/[\\"]/g, "\\$&")}"`;
+          for (const messageId of messageIds) {
+            const hdr = context.extension.messageManager.get(messageId);
+            if (!hdr) {
+              continue;
+            }
+            const raw = hdr.getStringProperty("X-GM-LABELS");
+            if (!parseLabels(raw).includes(label)) {
+              hdr.setStringProperty(
+                "X-GM-LABELS",
+                raw ? `${raw} ${quoted}` : quoted
+              );
+            }
+          }
+          refreshAll();
         },
 
         async getAccessToken(serverKey) {

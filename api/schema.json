@@ -21,7 +21,7 @@
       {
         "name": "listGmailServers",
         "type": "function",
-        "description": "List incoming Gmail IMAP servers as [{ key, username }].",
+        "description": "List incoming Gmail IMAP servers as [{ key, accountId, username }].",
         "async": true,
         "parameters": []
       },
@@ -31,6 +31,16 @@
         "description": "Get an OAuth access token for a Gmail server, using Thunderbird's stored login.",
         "async": true,
         "parameters": [{ "name": "serverKey", "type": "string" }]
+      },
+      {
+        "name": "addLabel",
+        "type": "function",
+        "description": "Record a label on messages locally, so their chips update without waiting for a re-download.",
+        "async": true,
+        "parameters": [
+          { "name": "messageIds", "type": "array", "items": { "type": "integer" } },
+          { "name": "label", "type": "string" }
+        ]
       },
       {
         "name": "listLabelNames",
