@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "Gmail Label Chips",
+  "version": "1.0.0",
+  "description": "Shows Gmail labels, in their Gmail colors, below the subject on message list cards.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "gmail-label-chips@interledger.org",
+      "strict_min_version": "128.0"
+    }
+  },
+  "permissions": ["storage", "tabs", "accountsRead", "https://gmail.googleapis.com/*"],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "options_ui": {
+    "page": "options/options.html"
+  },
+  "experiment_apis": {
+    "gmailLabelChips": {
+      "schema": "api/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["gmailLabelChips"]],
+        "script": "api/implementation.js"
+      }
+    }
+  }
+}

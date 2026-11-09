@@ -1,0 +1,49 @@
+body {
+  font: message-box;
+  margin: 12px;
+}
+
+h2 {
+  font-size: 1.1em;
+  margin: 0 0 6px;
+}
+
+section + section {
+  margin-top: 18px;
+}
+
+.hint,
+#status {
+  margin: 0 0 8px;
+}
+
+.error {
+  color: #c5221f;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+td {
+  padding: 3px 8px 3px 0;
+  vertical-align: middle;
+}
+
+.chip {
+  display: inline-block;
+  max-width: 22em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85em;
+  line-height: 1.5;
+  padding: 0 5px;
+  border-radius: 4px;
+}
+
+input[type="color"] {
+  inline-size: 32px;
+  block-size: 22px;
+  padding: 0;
+}
