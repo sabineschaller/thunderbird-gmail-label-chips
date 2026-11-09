@@ -97,6 +97,44 @@ async function clearOverride(name) {
   render();
 }
 
+const menuList = document.getElementById("menu-labels");
+
+async function renderMenuLabels() {
+  const choices = await browser.runtime.sendMessage({ type: "listMenuLabels" });
+  menuList.replaceChildren(
+    ...choices.map(({ label, shown }) => {
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = shown;
+      checkbox.dataset.label = label;
+      checkbox.addEventListener("change", () =>
+        setMenuVisibility([label], checkbox.checked)
+      );
+      const row = document.createElement("label");
+      row.append(checkbox, ` ${label}`);
+      return row;
+    })
+  );
+}
+
+async function setMenuVisibility(labels, shown) {
+  const { menuVisibility = {} } = await browser.storage.local.get("menuVisibility");
+  for (const label of labels) {
+    menuVisibility[label] = shown;
+  }
+  await browser.storage.local.set({ menuVisibility });
+}
+
+for (const [id, shown] of [["menu-all", true], ["menu-none", false]]) {
+  document.getElementById(id).addEventListener("click", async () => {
+    const boxes = [...menuList.querySelectorAll("input[type=checkbox]")];
+    for (const box of boxes) {
+      box.checked = shown;
+    }
+    await setMenuVisibility(boxes.map(box => box.dataset.label), shown);
+  });
+}
+
 syncButton.addEventListener("click", async () => {
   syncButton.disabled = true;
   statusEl.textContent = "Syncing…";
@@ -108,4 +146,5 @@ syncButton.addEventListener("click", async () => {
   }
 });
 
+renderMenuLabels();
 render();

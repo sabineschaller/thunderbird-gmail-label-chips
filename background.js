@@ -84,6 +84,9 @@ browser.storage.onChanged.addListener((changes, area) => {
   if (area == "local" && changes.overrides) {
     pushColors();
   }
+  if (area == "local" && changes.menuVisibility) {
+    buildMenu();
+  }
 });
 
 // Right-click menu on the message list for adding a label. In Gmail's IMAP,
@@ -91,8 +94,20 @@ browser.storage.onChanged.addListener((changes, area) => {
 
 const MENU_ROOT = "gm-label-as";
 const MENU_PREFIX = "gm-label:";
-// Labels left out of the menu: Archive, Archives and everything below them.
-const HIDDEN_LABELS = /^Archives?(\/|$)/i;
+// Labels left out of the menu until the options page says otherwise: Archive,
+// Archives and everything below them.
+const HIDDEN_BY_DEFAULT = /^Archives?(\/|$)/i;
+
+// storage.local menuVisibility: { labelName: boolean } - choices made on the
+// options page. Labels not in it use HIDDEN_BY_DEFAULT.
+async function menuLabelChoices() {
+  const labels = await loadLabelFolders();
+  const { menuVisibility = {} } = await browser.storage.local.get("menuVisibility");
+  return labels.map(label => ({
+    label,
+    shown: menuVisibility[label] ?? !HIDDEN_BY_DEFAULT.test(label),
+  }));
+}
 
 // accountId -> Map(labelName -> folderId)
 let gLabelFolders = new Map();
@@ -108,8 +123,7 @@ async function loadLabelFolders() {
         // Inbox, Sent, Drafts, Trash, Spam, All Mail, ...
         folder.specialUse?.length ||
         label == "INBOX" ||
-        label.startsWith("[Gmail]") ||
-        HIDDEN_LABELS.test(label)
+        label.startsWith("[Gmail]")
       ) {
         continue;
       }
@@ -123,9 +137,20 @@ async function loadLabelFolders() {
   );
 }
 
+let gMenuBuild = Promise.resolve();
+
 /** Rebuild the menu if the labels changed. Returns true if it was rebuilt. */
-async function buildMenu() {
-  const labels = await loadLabelFolders();
+function buildMenu() {
+  // One at a time, so two rebuilds don't create the same items twice.
+  const run = gMenuBuild.then(rebuildMenu);
+  gMenuBuild = run.catch(e => console.error("Gmail Label Chips:", e));
+  return run;
+}
+
+async function rebuildMenu() {
+  const labels = (await menuLabelChoices())
+    .filter(choice => choice.shown)
+    .map(choice => choice.label);
   if (labels.join("\n") == gMenuLabels.join("\n")) {
     return false;
   }
@@ -201,6 +226,9 @@ browser.menus.onClicked.addListener(info => {
 browser.runtime.onMessage.addListener(message => {
   if (message?.type == "sync") {
     return syncColors();
+  }
+  if (message?.type == "listMenuLabels") {
+    return menuLabelChoices();
   }
   if (message?.type == "listLabels") {
     return browser.gmailLabelChips
