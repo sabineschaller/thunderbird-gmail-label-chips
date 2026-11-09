@@ -193,13 +193,59 @@ async function rebuildMenu() {
   return true;
 }
 
-async function selectedMessages(messageList) {
+async function allMessages(messageList) {
   const messages = [...messageList.messages];
   while (messageList.id) {
     messageList = await browser.messages.continueList(messageList.id);
     messages.push(...messageList.messages);
   }
   return messages;
+}
+
+/**
+ * In Gmail's IMAP, deleting a message from a label's folder (without moving it
+ * to Trash) removes just that label; the message stays in All Mail.
+ */
+async function removeLabel(label, messages) {
+  const copiesToDelete = new Set();
+  const relabeled = [];
+  for (const message of messages) {
+    const folderId = gLabelFolders.get(message.folder?.accountId)?.get(label);
+    if (!folderId) {
+      continue;
+    }
+    if (message.folder.id == folderId) {
+      copiesToDelete.add(message.id);
+      continue;
+    }
+    relabeled.push(message.id);
+    const copies = message.headerMessageId
+      ? await allMessages(
+          await browser.messages.query({
+            folderId,
+            headerMessageId: message.headerMessageId,
+          })
+        )
+      : [];
+    if (!copies.length) {
+      console.warn(
+        `Gmail Label Chips: no copy of "${message.subject}" found in "${label}"; open that folder once so Thunderbird downloads its message list, then try again.`
+      );
+    }
+    for (const copy of copies) {
+      copiesToDelete.add(copy.id);
+    }
+  }
+  try {
+    if (copiesToDelete.size) {
+      await browser.messages.delete([...copiesToDelete], {
+        deletePermanently: true,
+      });
+    }
+    await browser.gmailLabelChips.removeLabel(relabeled, label);
+  } catch (e) {
+    console.error(`Gmail Label Chips: removing label "${label}" failed`, e);
+  }
 }
 
 async function addLabel(label, messages) {
@@ -252,7 +298,7 @@ browser.menus.onShown.addListener(async (info, tab) => {
   if (info.contexts.includes("message_list")) {
     prefix = MENU_PREFIX;
     if (info.selectedMessages) {
-      messages = await selectedMessages(info.selectedMessages);
+      messages = await allMessages(info.selectedMessages);
     }
   } else if (info.contexts.includes("message_display_action_menu")) {
     prefix = BUTTON_PREFIX;
@@ -275,17 +321,15 @@ browser.menus.onShown.addListener(async (info, tab) => {
 
 browser.menus.onClicked.addListener(async (info, tab) => {
   const id = info.menuItemId;
-  // Ticked labels are already applied, and removing labels isn't supported.
-  if (typeof id != "string" || info.wasChecked) {
+  if (typeof id != "string") {
     return;
   }
+  // Selecting a ticked label removes it, an unticked one adds it.
+  const apply = info.wasChecked ? removeLabel : addLabel;
   if (id.startsWith(MENU_PREFIX) && info.selectedMessages) {
-    addLabel(
-      id.slice(MENU_PREFIX.length),
-      await selectedMessages(info.selectedMessages)
-    );
+    apply(id.slice(MENU_PREFIX.length), await allMessages(info.selectedMessages));
   } else if (id.startsWith(BUTTON_PREFIX) && tab) {
-    addLabel(
+    apply(
       id.slice(BUTTON_PREFIX.length),
       await browser.messageDisplay.getDisplayedMessages(tab.id)
     );

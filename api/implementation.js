@@ -110,6 +110,10 @@ function decodeModifiedUtf7(str) {
   });
 }
 
+function quoteLabel(label) {
+  return `"${label.replace(/[\\"]/g, "\\$&")}"`;
+}
+
 function colorFor(serverKey, name) {
   return gColors["*"]?.[name] ?? gColors[serverKey]?.[name] ?? DEFAULT_COLOR;
 }
@@ -298,8 +302,25 @@ var gmailLabelChips = class extends ExtensionCommon.ExtensionAPI {
           });
         },
 
+        async removeLabel(messageIds, label) {
+          for (const messageId of messageIds) {
+            const hdr = context.extension.messageManager.get(messageId);
+            if (!hdr) {
+              continue;
+            }
+            const labels = parseLabels(hdr.getStringProperty("X-GM-LABELS"));
+            if (labels.includes(label)) {
+              hdr.setStringProperty(
+                "X-GM-LABELS",
+                labels.filter(l => l != label).map(quoteLabel).join(" ")
+              );
+            }
+          }
+          refreshAll();
+        },
+
         async addLabel(messageIds, label) {
-          const quoted = `"${label.replace(/[\\"]/g, "\\$&")}"`;
+          const quoted = quoteLabel(label);
           for (const messageId of messageIds) {
             const hdr = context.extension.messageManager.get(messageId);
             if (!hdr) {

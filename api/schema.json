@@ -43,6 +43,16 @@
         ]
       },
       {
+        "name": "removeLabel",
+        "type": "function",
+        "description": "Remove a label recorded on messages locally, so their chips update without waiting for a re-download.",
+        "async": true,
+        "parameters": [
+          { "name": "messageIds", "type": "array", "items": { "type": "integer" } },
+          { "name": "label", "type": "string" }
+        ]
+      },
+      {
         "name": "getLabels",
         "type": "function",
         "description": "Get the user labels recorded on each message (not counting the label of the folder it's in).",
