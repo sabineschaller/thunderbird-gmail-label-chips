@@ -1,16 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
-  <defs><linearGradient id="rainbow" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="48" y2="0"><stop offset="0.00" stop-color="#E53935"/><stop offset="0.20" stop-color="#FB8C00"/><stop offset="0.40" stop-color="#FDD835"/><stop offset="0.60" stop-color="#43A047"/><stop offset="0.80" stop-color="#1E88E5"/><stop offset="1.00" stop-color="#8E24AA"/></linearGradient></defs>
+  <defs><linearGradient id="rainbow" gradientUnits="userSpaceOnUse" x1="120" y1="0" x2="822" y2="0"><stop offset="0.00" stop-color="#E53935"/><stop offset="0.20" stop-color="#FB8C00"/><stop offset="0.40" stop-color="#FDD835"/><stop offset="0.60" stop-color="#43A047"/><stop offset="0.80" stop-color="#1E88E5"/><stop offset="1.00" stop-color="#8E24AA"/></linearGradient></defs>
   <path d="M8 6h31.5a6 6 0 0 1 4.6 2.15l15.4 18.5a5 5 0 0 1 0 6.4L44.1 51.85A6 6 0 0 1 39.5 54H8a6 6 0 0 1-6-6V12a6 6 0 0 1 6-6z" fill="#EA4335"/>
-  <g transform="translate(16.5 21.75) scale(0.46)">
-    <path d="M0 6a6 6 0 0 1 9.6-4.8L12 3v33H4a4 4 0 0 1-4-4z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M48 6a6 6 0 0 0-9.6-4.8L36 3v33h8a4 4 0 0 0 4-4z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M12 3 24 12 36 3v9L24 21 12 12z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M0 6a6 6 0 0 1 9.6-4.8L12 3v9L0 3z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M48 6a6 6 0 0 0-9.6-4.8L36 3v9l12-9z" fill="#fff" stroke="#fff" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M0 6a6 6 0 0 1 9.6-4.8L12 3v33H4a4 4 0 0 1-4-4z" fill="url(#rainbow)"/>
-    <path d="M48 6a6 6 0 0 0-9.6-4.8L36 3v33h8a4 4 0 0 0 4-4z" fill="url(#rainbow)"/>
-    <path d="M12 3 24 12 36 3v9L24 21 12 12z" fill="url(#rainbow)"/>
-    <path d="M0 6a6 6 0 0 1 9.6-4.8L12 3v9L0 3z" fill="url(#rainbow)"/>
-    <path d="M48 6a6 6 0 0 0-9.6-4.8L36 3v9l12-9z" fill="url(#rainbow)"/>
+  <!-- The M is Moby Bold by Felix Braden (Floodfonts), converted to an outline. -->
+  <g transform="translate(12.99 40.19) scale(0.0308)">
+    <path d="M822 -45Q822 -26 808.5 -13Q795 0 776 0L696 0Q677 0 663.5 -13Q650 -26 650 -45L650 -398L507 -232Q494 -216 472 -216Q451 -216 436 -233L292 -398L292 -45Q292 -26 278.5 -13Q265 0 245 0L167 0Q147 0 133.5 -13Q120 -26 120 -45L120 -617Q120 -636 133.5 -649Q147 -662 167 -662L259 -662Q281 -662 296 -645L472 -443L647 -645Q662 -662 683 -662L776 -662Q795 -662 808.5 -649Q822 -636 822 -617L822 -45Z" fill="#fff" stroke="#fff" stroke-width="118" stroke-linejoin="round"/>
+    <path d="M822 -45Q822 -26 808.5 -13Q795 0 776 0L696 0Q677 0 663.5 -13Q650 -26 650 -45L650 -398L507 -232Q494 -216 472 -216Q451 -216 436 -233L292 -398L292 -45Q292 -26 278.5 -13Q265 0 245 0L167 0Q147 0 133.5 -13Q120 -26 120 -45L120 -617Q120 -636 133.5 -649Q147 -662 167 -662L259 -662Q281 -662 296 -645L472 -443L647 -645Q662 -662 683 -662L776 -662Q795 -662 808.5 -649Q822 -636 822 -617L822 -45Z" fill="url(#rainbow)"/>
   </g>
 </svg>

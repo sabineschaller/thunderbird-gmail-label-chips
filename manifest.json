@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Label chips for Gmail",
-  "version": "1.8.2",
+  "version": "1.8.3",
   "description": "Shows Gmail labels, in colors you choose, below the subject on message list cards, and flags Inbox messages whose conversation is already archived.",
   "icons": {
     "32": "icons/icon.svg",
