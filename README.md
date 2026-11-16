@@ -1,3 +1,5 @@
+<img src="icons/icon.svg" alt="" width="96" height="96">
+
 # Gmail Label Chips
 
 A Thunderbird add-on that shows your Gmail labels on the message list, in the
