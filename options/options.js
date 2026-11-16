@@ -2,53 +2,18 @@
 
 const DEFAULT_COLOR = { bg: "#dddddd", fg: "#444444" };
 
-const statusEl = document.getElementById("status");
-const syncButton = document.getElementById("sync");
 const table = document.getElementById("labels");
 
-function showStatus(syncStatus) {
-  statusEl.replaceChildren();
-  if (!syncStatus) {
-    statusEl.textContent = "Not synced yet.";
-    return;
-  }
-  const time = new Date(syncStatus.time).toLocaleString();
-  if (!syncStatus.results.length) {
-    statusEl.textContent = `No Gmail accounts found (checked ${time}).`;
-    return;
-  }
-  for (const { username, count, error } of syncStatus.results) {
-    const line = document.createElement("div");
-    if (error) {
-      line.className = "error";
-      line.textContent = `${username}: sync failed (${time}): ${error}`;
-    } else {
-      line.textContent = `${username}: ${count} label colors synced (${time}).`;
-    }
-    statusEl.append(line);
-  }
-}
-
 async function render() {
-  const { synced = {}, overrides = {}, syncStatus } =
-    await browser.storage.local.get(["synced", "overrides", "syncStatus"]);
-  showStatus(syncStatus);
-
-  const fromGmail = Object.assign({}, ...Object.values(synced).reverse());
+  const { labelColors = {} } = await browser.storage.local.get("labelColors");
   const names = await browser.runtime.sendMessage({ type: "listLabels" });
-  for (const name of Object.keys(fromGmail)) {
-    if (!names.includes(name)) {
-      names.push(name);
-    }
-  }
-  names.sort((a, b) => a.localeCompare(b));
   if (!names.includes("Inbox")) {
     names.unshift("Inbox");
   }
 
   table.replaceChildren(
     ...names.map(name => {
-      const color = overrides[name] ?? fromGmail[name] ?? DEFAULT_COLOR;
+      const color = labelColors[name] ?? DEFAULT_COLOR;
       const row = document.createElement("tr");
 
       const chip = document.createElement("span");
@@ -63,15 +28,15 @@ async function render() {
         input.type = "color";
         input.value = color[part];
         input.title = part == "bg" ? "Background color" : "Text color";
-        input.addEventListener("change", () => setOverride(name, part, input.value, color));
+        input.addEventListener("change", () => setColor(name, part, input.value, color));
         return input;
       });
 
       const reset = document.createElement("button");
       reset.type = "button";
-      reset.textContent = "Use Gmail color";
-      reset.hidden = !overrides[name];
-      reset.addEventListener("click", () => clearOverride(name));
+      reset.textContent = "Reset to gray";
+      reset.hidden = !labelColors[name];
+      reset.addEventListener("click", () => clearColor(name));
 
       for (const content of [chip, ...pickers, reset]) {
         const cell = document.createElement("td");
@@ -83,17 +48,17 @@ async function render() {
   );
 }
 
-async function setOverride(name, part, value, current) {
-  const { overrides = {} } = await browser.storage.local.get("overrides");
-  overrides[name] = { ...current, ...overrides[name], [part]: value };
-  await browser.storage.local.set({ overrides });
+async function setColor(name, part, value, current) {
+  const { labelColors = {} } = await browser.storage.local.get("labelColors");
+  labelColors[name] = { ...current, ...labelColors[name], [part]: value };
+  await browser.storage.local.set({ labelColors });
   render();
 }
 
-async function clearOverride(name) {
-  const { overrides = {} } = await browser.storage.local.get("overrides");
-  delete overrides[name];
-  await browser.storage.local.set({ overrides });
+async function clearColor(name) {
+  const { labelColors = {} } = await browser.storage.local.get("labelColors");
+  delete labelColors[name];
+  await browser.storage.local.set({ labelColors });
   render();
 }
 
@@ -134,17 +99,6 @@ for (const [id, shown] of [["menu-all", true], ["menu-none", false]]) {
     await setMenuVisibility(boxes.map(box => box.dataset.label), shown);
   });
 }
-
-syncButton.addEventListener("click", async () => {
-  syncButton.disabled = true;
-  statusEl.textContent = "Syncing…";
-  try {
-    await browser.runtime.sendMessage({ type: "sync" });
-  } finally {
-    syncButton.disabled = false;
-    render();
-  }
-});
 
 renderMenuLabels();
 render();

@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Label chips for Gmail",
-  "version": "1.7.1",
-  "description": "Shows Gmail labels, in their Gmail colors, below the subject on message list cards, and flags Inbox messages whose conversation is already archived.",
+  "version": "1.8.0",
+  "description": "Shows Gmail labels, in colors you choose, below the subject on message list cards, and flags Inbox messages whose conversation is already archived.",
   "icons": {
     "32": "icons/icon.svg",
     "64": "icons/icon.svg",
@@ -21,8 +21,7 @@
     "accountsRead",
     "messagesRead",
     "messagesMove",
-    "messagesDelete",
-    "https://gmail.googleapis.com/*"
+    "messagesDelete"
   ],
   "background": {
     "scripts": [

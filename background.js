@@ -1,65 +1,32 @@
-/* Keeps label colors in sync with Gmail and adds the chips to every mail tab. */
+/* Adds the chips to every mail tab and the label menus. */
 
 "use strict";
 
-const SYNC_INTERVAL_MS = 6 * 60 * 60 * 1000;
-
 // Stored in storage.local:
-//   synced:    { serverKey: { labelName: { bg, fg } } } - colors from Gmail
-//   overrides: { labelName: { bg, fg } }                - colors set by hand
-//   syncStatus: { time, results: [{ username, count?, error? }] }
+//   labelColors: { labelName: { bg, fg } } - colors picked on the options page
 
 async function pushColors() {
-  const { synced = {}, overrides = {} } = await browser.storage.local.get([
-    "synced",
-    "overrides",
-  ]);
-  await browser.gmailLabelChips.setColors({ ...synced, "*": overrides });
+  const { labelColors = {} } = await browser.storage.local.get("labelColors");
+  await browser.gmailLabelChips.setColors(labelColors);
 }
 
-async function fetchGmailColors(serverKey) {
-  const token = await browser.gmailLabelChips.getAccessToken(serverKey);
-  const response = await fetch(
-    "https://gmail.googleapis.com/gmail/v1/users/me/labels",
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(
-      `Gmail API ${response.status}: ${body?.error?.message ?? response.statusText}`
-    );
+/**
+ * Versions before 1.8 synced colors from Gmail and kept hand-picked ones apart.
+ * Keep the colors labels had then as picked colors, and drop the old data.
+ */
+async function migrateColors() {
+  const old = await browser.storage.local.get(["labelColors", "synced", "overrides"]);
+  if (!old.synced && !old.overrides) {
+    return;
   }
-  const { labels = [] } = await response.json();
-  const colors = {};
-  for (const label of labels) {
-    if (label.color?.backgroundColor) {
-      colors[label.name] = {
-        bg: label.color.backgroundColor,
-        fg: label.color.textColor,
-      };
-    }
+  if (!old.labelColors) {
+    // With more than one account, the first account's color wins.
+    const synced = Object.assign({}, ...Object.values(old.synced ?? {}).reverse());
+    await browser.storage.local.set({
+      labelColors: { ...synced, ...old.overrides },
+    });
   }
-  return colors;
-}
-
-async function syncColors() {
-  const servers = await browser.gmailLabelChips.listGmailServers();
-  const { synced = {} } = await browser.storage.local.get("synced");
-  const results = [];
-  for (const { key, username } of servers) {
-    try {
-      synced[key] = await fetchGmailColors(key);
-      results.push({ username, count: Object.keys(synced[key]).length });
-    } catch (e) {
-      // Keep colors from an earlier successful sync.
-      console.error(`Label chips for Gmail: syncing ${username} failed`, e);
-      results.push({ username, error: e.message });
-    }
-  }
-  const syncStatus = { time: Date.now(), results };
-  await browser.storage.local.set({ synced, syncStatus });
-  await pushColors();
-  return syncStatus;
+  await browser.storage.local.remove(["synced", "overrides", "syncStatus"]);
 }
 
 async function injectTab(tab) {
@@ -81,7 +48,7 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 browser.storage.onChanged.addListener((changes, area) => {
-  if (area == "local" && changes.overrides) {
+  if (area == "local" && changes.labelColors) {
     pushColors();
   }
   if (area == "local" && changes.menuVisibility) {
@@ -337,9 +304,6 @@ browser.menus.onClicked.addListener(async (info, tab) => {
 });
 
 browser.runtime.onMessage.addListener(message => {
-  if (message?.type == "sync") {
-    return syncColors();
-  }
   if (message?.type == "listMenuLabels") {
     return menuLabelChoices();
   }
@@ -357,11 +321,10 @@ browser.runtime.onMessage.addListener(message => {
 });
 
 (async () => {
+  await migrateColors();
   await pushColors();
   buildMenu();
   for (const tab of await browser.tabs.query({ type: "mail" })) {
     injectTab(tab);
   }
-  syncColors();
-  setInterval(syncColors, SYNC_INTERVAL_MS);
 })();

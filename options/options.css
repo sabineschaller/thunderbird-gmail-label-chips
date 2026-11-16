@@ -12,13 +12,8 @@ section + section {
   margin-top: 18px;
 }
 
-.hint,
-#status {
+.hint {
   margin: 0 0 8px;
-}
-
-.error {
-  color: #c5221f;
 }
 
 table {

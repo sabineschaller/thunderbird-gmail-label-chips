@@ -2,9 +2,9 @@
 
 # Label chips for Gmail
 
-A Thunderbird add-on that shows your Gmail labels on the message list, in the
-same colors you gave them in Gmail, and lets you add or remove labels without
-leaving Thunderbird.
+A Thunderbird add-on that shows your Gmail labels on the message list, in
+colors you choose, and lets you add or remove labels without leaving
+Thunderbird.
 
 > [!NOTE]
 > All of this add-on's code, icons and documentation were written with
@@ -19,9 +19,9 @@ leaving Thunderbird.
   message's Gmail labels appear as colored chips below the subject. In the
   compact two-row layout they sit next to the subject. The Inbox label is
   shown too; other system labels (Important, Starred, Sent, ...) are not.
-- **Gmail's colors.** Label colors are read from the Gmail API with the login
-  Thunderbird already has, and re-synced every 6 hours. You can override any
-  color in the add-on's options.
+- **Your colors.** Pick a background and text color for each label in the
+  add-on's options, for example to match your colors in Gmail. Labels without
+  a color show in gray.
 - **Label from the message list.** Right-click one or more messages and choose
   **Add Gmail Label**. Labels the messages already have are ticked; choosing a
   ticked label removes it.
@@ -37,8 +37,7 @@ leaving Thunderbird.
 ## Requirements
 
 - Thunderbird 128 or later (developed and tested on Thunderbird 159, macOS)
-- A Gmail account added to Thunderbird over IMAP, signed in with OAuth
-  (Thunderbird's default for Gmail)
+- A Gmail account added to Thunderbird over IMAP
 - In Gmail's settings under **Forwarding and POP/IMAP**: IMAP enabled, and
   **Auto-Expunge on** so that removing a label takes effect right away
 - The **All Mail** folder subscribed in Thunderbird, so removing a label never
@@ -63,11 +62,10 @@ updates the icon in the Add-ons Manager after a restart.
 
 Open them from **Tools → Add-ons and Themes → Label chips for Gmail → Options**.
 
-- **Colors from Gmail:** when colors were last synced, and a **Sync now** button.
 - **Right-click menu:** tick the labels you want in both label menus, or use
   **Show all** / **Hide all**.
-- **Label colors:** pick a different color for any label, or go back to
-  **Use Gmail color**.
+- **Label colors:** pick a background and text color for any label, or
+  **Reset to gray**.
 
 ## How it works
 
@@ -98,16 +96,16 @@ Open them from **Tools → Add-ons and Themes → Label chips for Gmail → Opti
 - Archive hints only know about messages Thunderbird has downloaded. Open an
   archive folder once, or turn on **Account Settings → Server Settings → Check
   all folders for new messages**, to keep them up to date.
-- Label colors need the Gmail API to be reachable with Thunderbird's login. If
-  syncing fails, labels use Gmail's default grey until you set a color by hand.
+- Colors aren't read from Gmail, so you set them once in the options. Upgrading
+  from a version before 1.8 keeps the colors you had.
 
 ## Development
 
 ```
 manifest.json         add-on manifest
-background.js         color syncing, menus, adding and removing labels
+background.js         label colors, menus, adding and removing labels
 api/schema.json       Experiment API definition
-api/implementation.js Experiment API: chips, archive hints, label storage, OAuth
+api/implementation.js Experiment API: chips, archive hints, label storage
 options/              options page
 icons/icon.svg        add-on icon
 icons/label-*.svg     toolbar button icon, one per Thunderbird theme

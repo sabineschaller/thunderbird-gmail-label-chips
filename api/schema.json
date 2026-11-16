@@ -12,7 +12,7 @@
       {
         "name": "setColors",
         "type": "function",
-        "description": "Set label colors as { serverKey: { labelName: { bg, fg } } } plus a '*' entry for overrides, and refresh all lists.",
+        "description": "Set label colors as { labelName: { bg, fg } } and refresh all lists.",
         "async": true,
         "parameters": [
           { "name": "colors", "type": "object", "additionalProperties": { "type": "any" } }
@@ -24,13 +24,6 @@
         "description": "List incoming Gmail IMAP servers as [{ key, accountId, username }].",
         "async": true,
         "parameters": []
-      },
-      {
-        "name": "getAccessToken",
-        "type": "function",
-        "description": "Get an OAuth access token for a Gmail server, using Thunderbird's stored login.",
-        "async": true,
-        "parameters": [{ "name": "serverKey", "type": "string" }]
       },
       {
         "name": "addLabel",

@@ -75,7 +75,7 @@ const CSS = `
 }
 `;
 
-// { serverKey: { labelName: { bg, fg } }, "*": { labelName: { bg, fg } } }
+// { labelName: { bg, fg } }
 let gColors = {};
 // about:3pane window -> { proto, original, style }
 const gPatched = new Map();
@@ -134,8 +134,8 @@ function quoteLabel(label) {
   return `"${label.replace(/[\\"]/g, "\\$&")}"`;
 }
 
-function colorFor(serverKey, name) {
-  return gColors["*"]?.[name] ?? gColors[serverKey]?.[name] ?? DEFAULT_COLOR;
+function colorFor(name) {
+  return gColors[name] ?? DEFAULT_COLOR;
 }
 
 function labelsForRow(row) {
@@ -152,18 +152,17 @@ function labelsForRow(row) {
   if (!raw) {
     return [];
   }
-  const serverKey = hdr.folder?.server?.key;
   const own = parseLabels(raw);
   const labels = [];
   for (const label of own) {
     const name = label.startsWith("\\") ? SYSTEM_LABELS[label] : label;
     if (name) {
-      labels.push({ name, color: colorFor(serverKey, name) });
+      labels.push({ name, color: colorFor(name) });
     }
   }
   if (hdr.folder.getFlag(Ci.nsMsgFolderFlags.Inbox)) {
     for (const name of threadArchiveLabels(hdr, new Set(own))) {
-      labels.push({ name, color: colorFor(serverKey, name), hint: true });
+      labels.push({ name, color: colorFor(name), hint: true });
     }
   }
   return labels;
@@ -599,26 +598,6 @@ var gmailLabelChips = class extends ExtensionCommon.ExtensionAPI {
             }
           }
           refreshAll();
-        },
-
-        async getAccessToken(serverKey) {
-          const server = getServer(serverKey);
-          const { OAuth2Module } = ChromeUtils.importESModule(
-            "resource:///modules/OAuth2Module.sys.mjs"
-          );
-          const oauth = new OAuth2Module();
-          if (!oauth.initFromMail(server)) {
-            throw new ExtensionError(
-              `${server.username} doesn't sign in with OAuth`
-            );
-          }
-          return new Promise((resolve, reject) =>
-            oauth.getAccessToken({
-              onSuccess: resolve,
-              onFailure: () =>
-                reject(new ExtensionError("Couldn't get a Google access token")),
-            })
-          );
         },
 
         async listLabelNames(serverKey) {
