@@ -127,6 +127,11 @@ screen.
 To see errors, open **Tools → Developer Tools → Error Console** (background
 script and Experiment API) or **Debug Add-ons → Inspect** (background page).
 
+## Privacy
+
+The add-on makes no network requests and collects no data. Everything stays in
+Thunderbird on your computer. See [PRIVACY.md](PRIVACY.md) for details.
+
 ## License
 
 Copyright © 2026 Sabine Schaller.
