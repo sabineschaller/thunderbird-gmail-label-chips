@@ -69,9 +69,15 @@ versions stored, keeping the colors as your own picks.
 
 Thunderbird describes the Experiment API as full, unrestricted access to
 Thunderbird and your computer. The add-on uses it only for the purposes above.
-Its source code is unminified and can be checked by anyone.
+Its source code is unminified and public at
+https://github.com/sabineschaller/thunderbird-gmail-label-chips.
 
 ## Changes to this policy
 
 If a future version handles data differently, this policy will be updated
 before that version is released.
+
+## Contact
+
+Questions about privacy or anything else:
+https://github.com/sabineschaller/thunderbird-gmail-label-chips/issues
