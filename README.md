@@ -4,6 +4,13 @@ A Thunderbird add-on that shows your Gmail labels on the message list, in the
 same colors you gave them in Gmail, and lets you add or remove labels without
 leaving Thunderbird.
 
+> [!NOTE]
+> All of this add-on's code, icons and documentation were written with
+> [Claude Code](https://claude.com/claude-code), Anthropic's AI coding tool.
+> It was tested by hand in Thunderbird 159 on macOS with one Gmail account, but
+> has had no formal code review. Read the code before installing it, because
+> its Experiment API gives it full access to Thunderbird.
+
 ## Features
 
 - **Label chips on cards.** In the cards view of the message list, each
