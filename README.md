@@ -1,6 +1,6 @@
 <img src="icons/icon.svg" alt="" width="96" height="96">
 
-# Gmail Label Chips
+# Label chips for Gmail
 
 A Thunderbird add-on that shows your Gmail labels on the message list, in the
 same colors you gave them in Gmail, and lets you add or remove labels without
@@ -61,7 +61,7 @@ updates the icon in the Add-ons Manager after a restart.
 
 ## Options
 
-Open them from **Tools → Add-ons and Themes → Gmail Label Chips → Options**.
+Open them from **Tools → Add-ons and Themes → Label chips for Gmail → Options**.
 
 - **Colors from Gmail:** when colors were last synced, and a **Sync now** button.
 - **Right-click menu:** tick the labels you want in both label menus, or use

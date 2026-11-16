@@ -52,7 +52,7 @@ async function syncColors() {
       results.push({ username, count: Object.keys(synced[key]).length });
     } catch (e) {
       // Keep colors from an earlier successful sync.
-      console.error(`Gmail Label Chips: syncing ${username} failed`, e);
+      console.error(`Label chips for Gmail: syncing ${username} failed`, e);
       results.push({ username, error: e.message });
     }
   }
@@ -69,7 +69,7 @@ async function injectTab(tab) {
   try {
     await browser.gmailLabelChips.inject(tab.id);
   } catch (e) {
-    console.error("Gmail Label Chips: couldn't add chips to tab", tab.id, e);
+    console.error("Label chips for Gmail: couldn't add chips to tab", tab.id, e);
   }
 }
 
@@ -144,7 +144,7 @@ let gMenuBuild = Promise.resolve();
 function buildMenu() {
   // One at a time, so two rebuilds don't create the same items twice.
   const run = gMenuBuild.then(rebuildMenu);
-  gMenuBuild = run.catch(e => console.error("Gmail Label Chips:", e));
+  gMenuBuild = run.catch(e => console.error("Label chips for Gmail:", e));
   return run;
 }
 
@@ -229,7 +229,7 @@ async function removeLabel(label, messages) {
       : [];
     if (!copies.length) {
       console.warn(
-        `Gmail Label Chips: no copy of "${message.subject}" found in "${label}"; open that folder once so Thunderbird downloads its message list, then try again.`
+        `Label chips for Gmail: no copy of "${message.subject}" found in "${label}"; open that folder once so Thunderbird downloads its message list, then try again.`
       );
     }
     for (const copy of copies) {
@@ -244,7 +244,7 @@ async function removeLabel(label, messages) {
     }
     await browser.gmailLabelChips.removeLabel(relabeled, label);
   } catch (e) {
-    console.error(`Gmail Label Chips: removing label "${label}" failed`, e);
+    console.error(`Label chips for Gmail: removing label "${label}" failed`, e);
   }
 }
 
@@ -267,7 +267,7 @@ async function addLabel(label, messages) {
       await browser.messages.copy(messageIds, folderId);
       await browser.gmailLabelChips.addLabel(messageIds, label);
     } catch (e) {
-      console.error(`Gmail Label Chips: adding label "${label}" failed`, e);
+      console.error(`Label chips for Gmail: adding label "${label}" failed`, e);
     }
   }
 }

@@ -285,7 +285,7 @@ async function buildArchiveIndex(server) {
             }
           }
         } catch (e) {
-          console.error(`Gmail Label Chips: couldn't read ${folder.URI}`, e);
+          console.error(`Label chips for Gmail: couldn't read ${folder.URI}`, e);
         }
         if (weOpenedDB && !isFolderShown(folder)) {
           try {
@@ -451,7 +451,7 @@ async function patchWindow(win) {
     try {
       renderChips(this);
     } catch (e) {
-      console.error("Gmail Label Chips:", e);
+      console.error("Label chips for Gmail:", e);
     }
   };
 
@@ -507,7 +507,7 @@ var gmailLabelChips = class extends ExtensionCommon.ExtensionAPI {
       try {
         unpatchWindow(win, patch);
       } catch (e) {
-        console.error("Gmail Label Chips:", e);
+        console.error("Label chips for Gmail:", e);
       }
     }
     gPatched.clear();
