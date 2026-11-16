@@ -108,7 +108,7 @@ Build the `.xpi` from the project folder:
 
 ```sh
 zip -r -X -q ../gmail-label-chips.xpi manifest.json background.js api options \
-  icons/icon.svg icons/label-dark.svg icons/label-light.svg
+  icons/icon.svg icons/label-dark.svg icons/label-light.svg LICENSE
 ```
 
 The toolbar icon files are named after the theme they're shown in:
@@ -119,3 +119,9 @@ screen.
 
 To see errors, open **Tools → Developer Tools → Error Console** (background
 script and Experiment API) or **Debug Add-ons → Inspect** (background page).
+
+## License
+
+Copyright © 2026 Sabine Schaller.
+
+This project is licensed under the [Mozilla Public License 2.0](LICENSE).
