@@ -36,7 +36,7 @@ Thunderbird.
 
 ## Requirements
 
-- Thunderbird 128 or later (developed and tested on Thunderbird 159, macOS)
+- Thunderbird 159 or later (developed and tested on Thunderbird 159, macOS)
 - A Gmail account added to Thunderbird over IMAP
 - In Gmail's settings under **Forwarding and POP/IMAP**: IMAP enabled, and
   **Auto-Expunge on** so that removing a label takes effect right away
